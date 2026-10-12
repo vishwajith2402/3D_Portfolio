@@ -19,7 +19,7 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   return (
-    <div className="relative min-h-screen bg-[#0D0D0D] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
+    <div className="relative min-h-screen bg-[#0D0D0D] dark:bg-[#0D0D0D] text-slate-100 dark:text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black transition-colors duration-300">
       {/* Subtle Glowing Desktop Cursor */}
       <CustomCursor />
 

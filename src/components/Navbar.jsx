@@ -31,7 +31,7 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-4 transition-all duration-300 backdrop-blur-md bg-[#0D0D0D]/75 dark:bg-[#0D0D0D]/80 border-b border-purple-500/15">
+    <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-4 transition-all duration-300 backdrop-blur-md bg-white/80 dark:bg-[#0D0D0D]/80 border-b border-slate-200 dark:border-purple-500/15">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Brand / Logo */}
@@ -42,22 +42,22 @@ export const Navbar = () => {
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="font-bold tracking-tight text-white dark:text-white text-base">
-              VISHWAJITH <span className="text-cyan-400">P</span>
+            <span className="font-bold tracking-tight text-slate-900 dark:text-white text-base">
+              VISHWAJITH <span className="text-cyan-500 dark:text-cyan-400">P</span>
             </span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-purple-300/80 -mt-0.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-300/80 -mt-0.5">
               AI & ML Systems
             </span>
           </div>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-slate-900/40 border border-slate-800/80 backdrop-blur-md">
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900/40 border border-slate-300 dark:border-slate-800/80 backdrop-blur-md">
           {navLinks.map((item) => (
             <button
               key={item.name}
               onClick={() => handleNavClick(item.href)}
-              className="px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-slate-300 hover:text-cyan-300 transition-colors rounded-full hover:bg-white/5"
+              className="px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5"
             >
               {item.name}
             </button>
