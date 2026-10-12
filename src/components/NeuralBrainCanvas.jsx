@@ -1,73 +1,88 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Float, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Procedural Neural Brain Cortex with Pulse Synapses and Action Potentials
-function NeuralBrainMesh() {
-  const groupRef = useRef();
+// -------------------------------------------------------------
+// Procedural Volumetric Brain Cortex Geometry with Lobes & Sulci
+// -------------------------------------------------------------
+function AnatomicalBrainCortex() {
   const pointsRef = useRef();
-  const pulseLinesRef = useRef();
-  const pulsesRef = useRef([]);
+  const linesRef = useRef();
 
-  // Generate 650 high-definition brain cortical nodes
-  const { nodes, nodePositions, colors, staticLinePositions, linePairs } = useMemo(() => {
+  // Generate 850 anatomical cortical nodes across Frontal, Parietal, Occipital & Temporal lobes
+  const { nodePositions, colors, linePositions } = useMemo(() => {
     const pts = [];
     const colorArr = [];
-    const count = 550;
-    const radius = 2.3;
+    const nodeCount = 750;
+    const baseRadius = 2.4;
 
-    const colorPurple = new THREE.Color('#7C3AED');
-    const colorCyan = new THREE.Color('#06B6D4');
-    const colorNeonWhite = new THREE.Color('#E0F2FE');
+    const colorPurple = new THREE.Color('#6D28D9');
+    const colorCyan = new THREE.Color('#22D3EE');
+    const colorElectricIndigo = new THREE.Color('#4F46E5');
+    const colorWhitePulse = new THREE.Color('#FFFFFF');
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < nodeCount; i++) {
+      // Hemisphere sign (-1 for left, +1 for right)
       const hemisphere = i % 2 === 0 ? 1 : -1;
+
+      // Stratified sphere coordinates
       const u = Math.random();
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
       const phi = Math.acos(2.0 * v - 1.0);
 
-      // Organic sulci and gyri cortical folds
-      const fold =
+      // Anatomical brain shaping factors
+      // Frontal lobe expansion, occipital taper, temporal rounding
+      const frontalBias = 1.0 + 0.15 * Math.cos(theta) * Math.sin(phi);
+      const temporalBias = 1.0 + 0.12 * Math.sin(theta * 2);
+      
+      // High-frequency cortical convolution ridges (gyri & sulci folds)
+      const gyrusFold =
         0.82 +
-        0.14 * Math.sin(theta * 4) * Math.cos(phi * 5) +
-        0.08 * Math.sin(phi * 8) +
-        0.05 * Math.cos(theta * 2);
+        0.16 * Math.sin(theta * 5) * Math.cos(phi * 6) +
+        0.09 * Math.sin(phi * 10) +
+        0.06 * Math.cos(theta * 3);
 
-      const r = radius * fold;
+      const r = baseRadius * gyrusFold * frontalBias * temporalBias;
 
       let x = r * Math.sin(phi) * Math.cos(theta);
-      let y = r * Math.sin(phi) * Math.sin(theta) * 0.88;
-      let z = r * Math.cos(phi) * 1.15;
+      let y = r * Math.sin(phi) * Math.sin(theta) * 0.86; // slightly flat top-to-bottom
+      let z = r * Math.cos(phi) * 1.18; // elongated anterior-posterior (front to back)
 
-      // Hemispheric fissure gap
-      x = x + hemisphere * 0.38;
+      // Longitudinal cerebral fissure gap separating hemispheres
+      x = x + hemisphere * (0.36 + 0.08 * Math.abs(Math.sin(phi * 2)));
+
+      // Occipital lobe dent in cerebellum region
+      if (z < -1.2 && y < -0.4) {
+        y += 0.3;
+      }
 
       const vec = new THREE.Vector3(x, y, z);
       pts.push(vec);
 
-      // Color gradation across coronal & sagittal axes
-      const t = (x + 2.5) / 5.0;
-      const vertColor = colorPurple.clone().lerp(colorCyan, THREE.MathUtils.clamp(t, 0, 1));
-      if (Math.random() > 0.85) {
-        vertColor.lerp(colorNeonWhite, 0.7); // Bright firing nodes
+      // Gradient color based on sagittal (front-to-back) and coronal (left-to-right) position
+      const sagittalFactor = (z + 2.5) / 5.0;
+      const vertColor = colorPurple.clone().lerp(colorElectricIndigo, sagittalFactor).lerp(colorCyan, (x + 2.5) / 5.0);
+
+      // Random active neural spark nodes
+      if (Math.random() > 0.88) {
+        vertColor.lerp(colorWhitePulse, 0.75);
       }
+
       colorArr.push(vertColor.r, vertColor.g, vertColor.b);
     }
 
-    // Connect close neighbors
+    // Connect close neuron nodes with synaptic axons
     const lines = [];
-    const pairs = [];
-    const maxDist = 0.92;
+    const maxDistance = 0.88;
 
     for (let i = 0; i < pts.length; i++) {
       let connections = 0;
       for (let j = i + 1; j < pts.length; j++) {
-        const d = pts[i].distanceTo(pts[j]);
-        if (d < maxDist && connections < 4) {
+        const dist = pts[i].distanceTo(pts[j]);
+        if (dist < maxDistance && connections < 4) {
           lines.push(pts[i].x, pts[i].y, pts[i].z, pts[j].x, pts[j].y, pts[j].z);
-          pairs.push({ from: pts[i], to: pts[j], dist: d });
           connections++;
         }
       }
@@ -77,81 +92,34 @@ function NeuralBrainMesh() {
     pts.forEach((p) => flatPts.push(p.x, p.y, p.z));
 
     return {
-      nodes: pts,
       nodePositions: new Float32Array(flatPts),
       colors: new Float32Array(colorArr),
-      staticLinePositions: new Float32Array(lines),
-      linePairs: pairs,
+      linePositions: new Float32Array(lines),
     };
   }, []);
 
-  // Synaptic signal pulses travelling through connections
-  const pulseParticles = useMemo(() => {
-    const pulseCount = 45;
-    const items = [];
-    for (let i = 0; i < pulseCount; i++) {
-      const pair = linePairs[Math.floor(Math.random() * linePairs.length)] || {
-        from: new THREE.Vector3(),
-        to: new THREE.Vector3(),
-      };
-      items.push({
-        pair,
-        progress: Math.random(),
-        speed: 0.008 + Math.random() * 0.012,
-      });
-    }
-    return items;
-  }, [linePairs]);
-
-  // Frame update: smooth rotation, continuous wave modulation & pointer tilt
-  useFrame((state, delta) => {
-    const t = state.clock.getElapsedTime();
-    if (groupRef.current) {
-      // Fluid gyroscopic rotation
-      groupRef.current.rotation.y += delta * 0.22;
-      groupRef.current.rotation.x = Math.sin(t * 0.4) * 0.08 + state.mouse.y * 0.25;
-      groupRef.current.rotation.z = Math.cos(t * 0.3) * 0.05 - state.mouse.x * 0.25;
-      groupRef.current.position.y = Math.sin(t * 1.2) * 0.12;
-    }
-
-    // Pulse position updates
-    if (pulsesRef.current && pulseParticles.length > 0) {
-      pulseParticles.forEach((p, idx) => {
-        p.progress += p.speed;
-        if (p.progress > 1) {
-          p.progress = 0;
-          p.pair = linePairs[Math.floor(Math.random() * linePairs.length)];
-        }
-        const mesh = pulsesRef.current[idx];
-        if (mesh && p.pair) {
-          mesh.position.lerpVectors(p.pair.from, p.pair.to, p.progress);
-        }
-      });
-    }
-  });
-
   return (
-    <group ref={groupRef}>
-      {/* 1. Base Static Synaptic Connections */}
-      <lineSegments>
+    <group>
+      {/* Synaptic Axons (Luminescent connecting lines) */}
+      <lineSegments ref={linesRef}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={staticLinePositions.length / 3}
-            array={staticLinePositions}
+            count={linePositions.length / 3}
+            array={linePositions}
             itemSize={3}
           />
         </bufferGeometry>
         <lineBasicMaterial
           color="#6D28D9"
           transparent
-          opacity={0.32}
+          opacity={0.4}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </lineSegments>
 
-      {/* 2. Neural Vertices */}
+      {/* Synaptic Nodes (Neuron soma bodies) */}
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -168,7 +136,7 @@ function NeuralBrainMesh() {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.085}
+          size={0.095}
           vertexColors
           transparent
           opacity={0.95}
@@ -176,70 +144,163 @@ function NeuralBrainMesh() {
           depthWrite={false}
         />
       </points>
-
-      {/* 3. Real-time Animated Synaptic Action Potentials (Glowing Pulses) */}
-      <group>
-        {pulseParticles.map((_, i) => (
-          <mesh
-            key={i}
-            ref={(el) => (pulsesRef.current[i] = el)}
-          >
-            <sphereGeometry args={[0.038, 8, 8]} />
-            <meshBasicMaterial
-              color="#22D3EE"
-              transparent
-              opacity={0.95}
-              blending={THREE.AdditiveBlending}
-            />
-          </mesh>
-        ))}
-      </group>
-
-      {/* 4. Internal Glowing Quantum Neural Core */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.8}>
-        <Sphere args={[1.05, 32, 32]}>
-          <MeshDistortMaterial
-            color="#4338CA"
-            emissive="#06B6D4"
-            emissiveIntensity={0.35}
-            distort={0.38}
-            speed={2.2}
-            wireframe
-            transparent
-            opacity={0.16}
-          />
-        </Sphere>
-      </Float>
-
-      {/* 5. Outer Ambient Plasma Field */}
-      <Sphere args={[2.8, 16, 16]}>
-        <meshBasicMaterial
-          color="#22D3EE"
-          wireframe
-          transparent
-          opacity={0.025}
-          blending={THREE.AdditiveBlending}
-        />
-      </Sphere>
     </group>
   );
 }
 
-// Interactive Neural Brain Canvas with Postprocessing Aesthetics
+// -------------------------------------------------------------
+// Swirling Neural Energy Vortex (Cosmic Data Helix)
+// -------------------------------------------------------------
+function NeuralEnergyVortex() {
+  const vortexRef = useRef();
+  const outerRingsRef = useRef();
+
+  // Spiral helical data streams circling the cortex
+  const { spiralPositions, spiralColors } = useMemo(() => {
+    const count = 420;
+    const positions = [];
+    const colors = [];
+    const colCyan = new THREE.Color('#22D3EE');
+    const colPurple = new THREE.Color('#A855F7');
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 8;
+      const radius = 2.6 + 0.6 * Math.sin(angle * 0.5);
+      const height = ((i / count) - 0.5) * 4.2;
+
+      const x = radius * Math.cos(angle);
+      const y = height;
+      const z = radius * Math.sin(angle);
+
+      positions.push(x, y, z);
+      const mix = Math.sin(angle * 0.3) * 0.5 + 0.5;
+      const c = colCyan.clone().lerp(colPurple, mix);
+      colors.push(c.r, c.g, c.b);
+    }
+
+    return {
+      spiralPositions: new Float32Array(positions),
+      spiralColors: new Float32Array(colors),
+    };
+  }, []);
+
+  useFrame((state, delta) => {
+    const t = state.clock.getElapsedTime();
+    if (vortexRef.current) {
+      vortexRef.current.rotation.y += delta * 0.45;
+      vortexRef.current.rotation.x = Math.sin(t * 0.5) * 0.15;
+    }
+    if (outerRingsRef.current) {
+      outerRingsRef.current.rotation.y -= delta * 0.25;
+      outerRingsRef.current.rotation.z = Math.cos(t * 0.4) * 0.12;
+    }
+  });
+
+  return (
+    <group>
+      {/* 1. Helical Neural Particle Vortex */}
+      <points ref={vortexRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={spiralPositions.length / 3}
+            array={spiralPositions}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-color"
+            count={spiralColors.length / 3}
+            array={spiralColors}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.07}
+          vertexColors
+          transparent
+          opacity={0.85}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </points>
+
+      {/* 2. Gyroscopic Quantum Orbital Rings */}
+      <group ref={outerRingsRef}>
+        <mesh rotation={[Math.PI / 3, 0, 0]}>
+          <ringGeometry args={[3.0, 3.025, 64]} />
+          <meshBasicMaterial
+            color="#22D3EE"
+            transparent
+            opacity={0.3}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <mesh rotation={[-Math.PI / 4, Math.PI / 6, 0]}>
+          <ringGeometry args={[3.2, 3.22, 64]} />
+          <meshBasicMaterial
+            color="#6D28D9"
+            transparent
+            opacity={0.25}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
+// Master 3D Neural Cortex Stage (Interactive + Gyro Camera)
+// -------------------------------------------------------------
+function BrainSceneContainer() {
+  const mainGroup = useRef();
+
+  useFrame((state, delta) => {
+    const t = state.clock.getElapsedTime();
+    if (mainGroup.current) {
+      // Gentle floating levitation
+      mainGroup.current.position.y = Math.sin(t * 1.1) * 0.12;
+      // Continuous slow majestic rotation
+      mainGroup.current.rotation.y += delta * 0.18;
+      // Pointer responsive tilt
+      mainGroup.current.rotation.x = Math.sin(t * 0.4) * 0.05 + state.mouse.y * 0.22;
+      mainGroup.current.rotation.z = Math.cos(t * 0.3) * 0.04 - state.mouse.x * 0.22;
+    }
+  });
+
+  return (
+    <group ref={mainGroup}>
+      <AnatomicalBrainCortex />
+      <NeuralEnergyVortex />
+    </group>
+  );
+}
+
 export const NeuralBrainCanvas = () => {
   return (
     <div className="w-full h-full min-h-[420px] md:min-h-[520px] relative select-none">
       <Canvas
-        camera={{ position: [0, 0, 5.8], fov: 48 }}
+        camera={{ position: [0, 0, 6.2], fov: 46 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         dpr={[1, 2]}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
-        <ambientLight intensity={0.6} />
-        <pointLight position={[8, 8, 8]} intensity={2.2} color="#22D3EE" />
-        <pointLight position={[-8, -8, -8]} intensity={2.0} color="#7C3AED" />
-        <pointLight position={[0, 0, 6]} intensity={1.0} color="#E0F2FE" />
-        <NeuralBrainMesh />
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} intensity={2.4} color="#22D3EE" />
+        <pointLight position={[-10, -10, -10]} intensity={2.0} color="#7C3AED" />
+        <pointLight position={[0, 4, 6]} intensity={1.2} color="#FFFFFF" />
+
+        <BrainSceneContainer />
+
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          rotateSpeed={0.65}
+          maxPolarAngle={Math.PI / 1.7}
+          minPolarAngle={Math.PI / 2.3}
+        />
       </Canvas>
     </div>
   );
