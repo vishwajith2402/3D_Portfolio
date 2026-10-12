@@ -1,51 +1,72 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Cpu, Sparkles, Terminal, Activity, ShieldCheck } from 'lucide-react';
 
 export const DigitalAvatar = () => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <div className="relative group w-64 h-64 md:w-80 md:h-80 mx-auto">
-      {/* Outer Glow Halo with Luxury Purple/Cyan Palette */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-cyan-400 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse-slow" />
+    <div
+      className="relative group w-72 h-80 sm:w-84 sm:h-96 mx-auto perspective-1000"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Outer Multi-layered Volumetric Aura (Purple & Cyan Dribbble Ascend style) */}
+      <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-400 opacity-60 blur-2xl group-hover:opacity-90 group-hover:blur-3xl transition-all duration-700 animate-pulse-slow" />
       
-      {/* Avatar Container */}
-      <div className="relative w-full h-full rounded-3xl overflow-hidden border border-purple-500/40 bg-[#0D0D0D]/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 shadow-2xl">
+      {/* Rotating Cyber Accent Ring */}
+      <div className="absolute -inset-1 rounded-3xl border border-cyan-400/30 group-hover:border-cyan-400/80 transition-all duration-500 pointer-events-none" />
+
+      {/* Main Glass HUD Container */}
+      <div className="relative w-full h-full rounded-3xl overflow-hidden border border-purple-500/40 bg-[#0A0E17]/90 backdrop-blur-2xl shadow-2xl flex flex-col justify-between p-4 transition-transform duration-500 group-hover:scale-[1.02]">
         
-        {/* Subtle Cyber Grid Background */}
-        <div 
-          className="absolute inset-0 opacity-10 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:16px_16px]" 
-        />
-        
-        {/* Futuristic Digital Silhouette Avatar with Purple-Cyan Rim Lighting */}
-        <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full p-[2px] bg-gradient-to-tr from-[#6D28D9] via-transparent to-[#22D3EE] shadow-[0_0_30px_rgba(34,211,238,0.3)]">
-          <div className="w-full h-full rounded-full bg-[#111827] flex items-center justify-center overflow-hidden relative">
-            <svg viewBox="0 0 100 100" className="w-full h-full text-slate-300">
-              <defs>
-                <linearGradient id="avatarGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6D28D9" />
-                  <stop offset="50%" stopColor="#38BDF8" />
-                  <stop offset="100%" stopColor="#22D3EE" />
-                </linearGradient>
-              </defs>
-              {/* Silhouette head and shoulders */}
-              <circle cx="50" cy="40" r="22" fill="#1e293b" stroke="url(#avatarGlow)" strokeWidth="1.5" />
-              <path d="M 18 90 C 22 66, 38 64, 50 64 C 62 64, 78 66, 82 90 Z" fill="#1e293b" stroke="url(#avatarGlow)" strokeWidth="1.5" />
-              {/* Neural circuit overlay on avatar */}
-              <path d="M 38 40 L 44 46 L 56 34 L 62 40" stroke="#22D3EE" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.8" />
-              <circle cx="44" cy="46" r="1.5" fill="#6D28D9" />
-              <circle cx="56" cy="34" r="1.5" fill="#22D3EE" />
-            </svg>
-            
-            {/* Ambient Cyan Rim Light Effect */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-cyan-500/10 pointer-events-none" />
+        {/* Top HUD Telemetry Bar */}
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-black/60 border border-purple-500/30 text-[10px] font-mono text-cyan-300 z-20 backdrop-blur-md">
+          <span className="flex items-center gap-1.5 font-bold">
+            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            NEURAL_IDENTITY // ACTIVE
+          </span>
+          <span className="text-purple-300">v2.8.4</span>
+        </div>
+
+        {/* Center Image Container with Scanlines & Cyber Rim Lighting */}
+        <div className="relative flex-1 my-3 rounded-2xl overflow-hidden border border-cyan-400/30 group/img flex items-center justify-center bg-slate-950">
+          
+          {/* Real AI Persona Portrait */}
+          <img
+            src="/avatar.jpg"
+            alt="Vishwajith P - AI Persona"
+            className="w-full h-full object-cover object-center filter saturate-110 contrast-105 group-hover:scale-105 transition-all duration-700"
+            onError={(e) => {
+              // Fallback to high tech geometric SVG if local image failed
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+
+          {/* Holographic Scanline Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/10 to-purple-600/20 pointer-events-none mix-blend-overlay" />
+          
+          {/* Moving Radar Scan Beam */}
+          <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-60 animate-bounce pointer-events-none" style={{ animationDuration: '4s' }} />
+
+          {/* Interactive Neural Nodes Overlay */}
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between px-2.5 py-1 rounded-lg bg-black/70 border border-purple-500/30 backdrop-blur-md text-[10px] font-mono text-slate-300">
+            <span className="flex items-center gap-1 text-cyan-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              Vision & Deep Learning
+            </span>
+            <span className="text-purple-400 font-bold">NODE #2402</span>
           </div>
         </div>
 
-        {/* Verified Badge / Identity Info */}
-        <div className="mt-4 text-center z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-purple-950/70 border border-purple-500/30 text-purple-200">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            Digital Persona • AI Engineer
+        {/* Bottom Verification & Identity Footer */}
+        <div className="px-3 py-2 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-between text-xs font-mono z-20">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold text-white">Vishwajith P</span>
           </div>
+          <span className="text-[11px] text-cyan-300 font-medium">AIML Student</span>
         </div>
+
       </div>
     </div>
   );
